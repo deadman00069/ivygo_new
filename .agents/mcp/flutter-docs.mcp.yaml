@@ -1,0 +1,5 @@
+name: flutter-docs
+command: npx
+args:
+  - mcp-server-fetch
+  - https://api.flutter.dev

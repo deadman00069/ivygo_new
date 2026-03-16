@@ -1,0 +1,9 @@
+name: flutter-ui
+skills:
+  - flutter-expert
+  - flutter-animations
+  - ui-quality
+rules:
+  - create reusable widgets
+  - use const widgets
+  - avoid large widgets

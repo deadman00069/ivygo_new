@@ -1,0 +1,15 @@
+name: ivygo-design-system
+brand:
+  primary: "#02ad8d"
+  primary_dark: "#017a64"
+  primary_darker: "#015a4a"
+typography:
+  font: Roboto
+radius:
+  inputs: 12
+  buttons: 12
+  cards: 14
+rules:
+  - never introduce new colors
+  - follow Ivygo token system
+  - support dark and light mode

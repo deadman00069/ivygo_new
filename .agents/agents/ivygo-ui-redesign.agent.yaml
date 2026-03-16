@@ -1,0 +1,13 @@
+name: ivygo-ui-redesign
+description: Redesign Ivygo Flutter screens using the Ivygo design system
+skills:
+  - flutter-expert
+  - flutter-animations
+  - ivygo-design-system
+  - ui-quality
+rules:
+  - redesign UI but keep logic unchanged
+  - extract reusable widgets
+  - use Ivygo theme
+  - follow Material 3
+  - support dark and light mode

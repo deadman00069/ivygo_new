@@ -1,0 +1,6 @@
+name: ui-quality
+rules:
+  - spacing multiples of 4
+  - consistent padding
+  - avoid deeply nested containers
+  - use visual hierarchy

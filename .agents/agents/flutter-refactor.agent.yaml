@@ -1,0 +1,7 @@
+name: flutter-refactor
+skills:
+  - flutter-expert
+rules:
+  - move reusable widgets to shared components
+  - remove duplicated UI
+  - simplify layouts
