@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ivygo_app/providers/auth_provider.dart';
 import 'package:ivygo_app/theme/app_theme.dart';
 
-class SignInScreen extends StatefulWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,20 +24,44 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  void _signIn() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (mounted) {
-        setState(() => _isLoading = false);
-        context.go('/home');
-      }
+  Future<void> _signIn() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    await ref.read(authProvider.notifier).login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
+    // Navigation is handled by GoRouter redirect — no explicit push needed.
+    // But show error from state if the attempt failed.
+    if (!mounted) return;
+    final authState = ref.read(authProvider);
+    if (authState is AuthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authState.message),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Watch auth state to drive loading indicator and react to changes.
+    final authState = ref.watch(authProvider);
+    final isLoading = authState is AuthLoading;
+
+    // Navigate to home once authenticated (router redirect also handles this).
+    ref.listen<AuthState>(authProvider, (_, next) {
+      if (next is AuthAuthenticated && mounted) {
+        context.go('/home');
+      }
+    });
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -90,6 +115,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      enabled: !isLoading,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Email',
@@ -112,6 +138,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
+                      enabled: !isLoading,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         labelText: 'Password',
@@ -125,8 +152,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                 : Icons.visibility_outlined,
                             color: AppColors.textMuted,
                           ),
-                          onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword),
+                          onPressed: isLoading
+                              ? null
+                              : () => setState(
+                                    () =>
+                                        _obscurePassword = !_obscurePassword,
+                                  ),
                         ),
                       ),
                       validator: (value) {
@@ -144,7 +175,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: isLoading ? null : () {},
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           padding: EdgeInsets.zero,
@@ -155,8 +186,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 24),
                     // Sign in button
                     ElevatedButton(
-                      onPressed: _isLoading ? null : _signIn,
-                      child: _isLoading
+                      onPressed: isLoading ? null : _signIn,
+                      child: isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
@@ -171,21 +202,19 @@ class _SignInScreenState extends State<SignInScreen> {
                     // Divider
                     Row(
                       children: [
-                        const Expanded(
-                            child: Divider(color: AppColors.border)),
+                        const Expanded(child: Divider(color: AppColors.border)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text('or continue with',
                               style: theme.textTheme.bodySmall),
                         ),
-                        const Expanded(
-                            child: Divider(color: AppColors.border)),
+                        const Expanded(child: Divider(color: AppColors.border)),
                       ],
                     ),
                     const SizedBox(height: 24),
                     // Google sign in button
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: isLoading ? null : () {},
                       icon: const Icon(Icons.g_mobiledata_rounded, size: 22),
                       label: const Text('Continue with Google'),
                     ),
@@ -199,7 +228,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           style: theme.textTheme.bodyMedium,
                         ),
                         GestureDetector(
-                          onTap: () => context.push('/register'),
+                          onTap: isLoading ? null : () => context.push('/register'),
                           child: const Text(
                             'Sign Up',
                             style: TextStyle(
