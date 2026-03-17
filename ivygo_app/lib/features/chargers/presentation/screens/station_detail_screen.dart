@@ -2,428 +2,481 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ivygo_app/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 
-final selectedConnectorProvider = StateProvider.autoDispose<int>((ref) => 0);
+// --- Providers --- //
+
+final selectedDateProvider = StateProvider.autoDispose<DateTime>((ref) {
+  // Default to today
+  return DateTime.now();
+});
+
+final selectedTimeProvider = StateProvider.autoDispose<TimeOfDay>((ref) {
+  // Default to 11:30 AM
+  return const TimeOfDay(hour: 11, minute: 30);
+});
+
+final selectedDurationIndexProvider = StateProvider.autoDispose<int>((ref) {
+  // Default to 1 hr (index 1)
+  return 1;
+});
+
+// --- Mock Data --- //
+
+const List<String> durationLabels = ['30 min', '1 hr', '2 hr', '3 hr', '4 hr'];
+const List<double> durationMultipliers = [0.5, 1.0, 2.0, 3.0, 4.0];
+const double baseCostPerHour = 8.05;
+
+// --- Screen --- //
 
 class StationDetailScreen extends ConsumerWidget {
   final String stationId;
   const StationDetailScreen({super.key, required this.stationId});
 
-  static const List<Map<String, dynamic>> _connectors = [
-    {'type': 'CCS2', 'kw': 150, 'status': 'available', 'price': '\$0.35/kWh'},
-    {'type': 'CHAdeMO', 'kw': 50, 'status': 'available', 'price': '\$0.28/kWh'},
-    {'type': 'Type 2', 'kw': 22, 'status': 'in_use', 'price': '\$0.18/kWh'},
-    {'type': 'Type 2', 'kw': 22, 'status': 'available', 'price': '\$0.18/kWh'},
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final selectedConnector = ref.watch(selectedConnectorProvider);
+    final colors = context.appColors;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          const _StationAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _StationHeader(theme: theme),
-                  const SizedBox(height: 16),
-                  const _QuickInfoRow(),
-                  const SizedBox(height: 24),
-                  Divider(color: context.appColors.divider),
-                  const SizedBox(height: 20),
-                  Text('Select Connector', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 12),
-                  const _ConnectorGrid(connectors: _connectors),
-                  const SizedBox(height: 24),
-                  Text('Amenities', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 12),
-                  const _AmenitiesGrid(),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        backgroundColor: colors.background,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded,
+              color: colors.textPrimary, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Charger Details',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share_outlined, color: colors.textPrimary, size: 22),
+            onPressed: () {},
           ),
         ],
       ),
-      bottomNavigationBar: _BottomActionPanel(
-        connector: _connectors[selectedConnector],
-      ),
-    );
-  }
-}
-
-class _StationAppBar extends StatelessWidget {
-  const _StationAppBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 220,
-      pinned: true,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: context.appColors.surface.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(Icons.arrow_back_ios_new_rounded,
-              size: 16, color: context.appColors.textPrimary),
-        ),
-        onPressed: () => context.go('/home/chargers'),
-      ),
-      actions: [
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: context.appColors.surface.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.bookmark_outline_rounded,
-                size: 18, color: context.appColors.textPrimary),
-          ),
-          onPressed: () {},
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: context.appColors.surface.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.share_outlined,
-                size: 18, color: context.appColors.textPrimary),
-          ),
-          onPressed: () {},
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF0D1F20), Color(0xFF0D1117)],
-                ),
-              ),
-              child: CustomPaint(
-                painter: _StationMapPainter(),
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: context.appColors.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.appColors.primary.withValues(alpha: 0.5),
-                          blurRadius: 20,
-                          spreadRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.electric_bolt_rounded,
-                        color: Colors.black, size: 24),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: context.appColors.surface.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'City Center Hub',
-                      style: TextStyle(
-                        color: context.appColors.textPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StationHeader extends StatelessWidget {
-  final ThemeData theme;
-  const _StationHeader({required this.theme});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'City Center Hub',
-                style: theme.textTheme.headlineLarge,
+              const SizedBox(height: 16),
+              // Image Placeholder
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.energy_savings_leaf_rounded,
+                      size: 40,
+                      color: colors.primary,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No photo provided',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 24),
+
+              // Charger Info Card
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'ALLAMBIE HEIGHTS CHARGER',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            letterSpacing: 0.5,
+                            color: colors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'AVAILABLE',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Type 2 · 7KW',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Icon(Icons.location_on_outlined,
+                              size: 16, color: colors.primary),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '123 Skyline Drive, Allambie Heights, NSW 2100',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Divider(color: colors.border),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildInfoColumn(context, label: '/kWh', value: '\$0.45'),
+                        _buildInfoColumnWithIcon(context,
+                            icon: Icons.bolt_rounded, value: '7KW'),
+                        _buildInfoColumnWithIcon(context,
+                            icon: Icons.energy_savings_leaf_rounded,
+                            value: 'GREEN'),
+                        _buildInfoColumnWithIcon(context,
+                            icon: Icons.ev_station_rounded, value: 'TYPE 2'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              
+              // Select Date Title
+              Text(
+                'Select Date',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              const _DateSelectionCard(),
+
+              const SizedBox(height: 32),
+
+              // Select Arrival Time Title
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.location_on_rounded,
-                      size: 14, color: context.appColors.textMuted),
-                  const SizedBox(width: 4),
-                  Expanded(
+                  Text(
+                    'Select Arrival Time',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Text(
-                      '12 Main Street, Downtown',
-                      style: theme.textTheme.bodyMedium,
-                      overflow: TextOverflow.ellipsis,
+                      'Available times: 8:00 AM - 3:45 PM',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              const _TimeSelectionField(),
+
+              const SizedBox(height: 32),
+
+              // Charging Duration Title
+              Text(
+                'Charging Duration',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const _DurationSelectionRow(),
+              const SizedBox(height: 16),
+              const _CostEstimationPill(),
+
+              const SizedBox(height: 32),
+
+              // Location Map Title
+              Text(
+                'Location',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Map Placeholder
+              Container(
+                height: 160,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _LocationGridPainter(color: colors.border),
+                        ),
+                      ),
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.ev_station_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 100), // padding for bottom bar
             ],
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.star_rounded,
-                    color: context.appColors.warning, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '4.8',
-                  style: theme.textTheme.titleMedium,
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 20,
+          top: 20,
+        ),
+        decoration: BoxDecoration(
+          color: colors.background,
+          border: Border(top: BorderSide(color: colors.border, width: 1)),
+        ),
+        child: ElevatedButton(
+          onPressed: () {
+            context.push('/home/booking');
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colors.primary,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Next Step',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
                 ),
-              ],
-            ),
-            Text(
-              '(128 reviews)',
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
+              ),
+              SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios_rounded, size: 16),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
-}
 
-class _QuickInfoRow extends StatelessWidget {
-  const _QuickInfoRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget _buildInfoColumn(BuildContext context,
+      {required String label, required String value}) {
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+    return Column(
       children: [
-        _QuickInfoChip(
-          icon: Icons.schedule_rounded,
-          label: 'Open 24/7',
-          color: context.appColors.success,
+        Text(
+          value,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colors.warning,
+          ),
         ),
-        const SizedBox(width: 8),
-        _QuickInfoChip(
-          icon: Icons.directions_car_rounded,
-          label: '0.3 km away',
-          color: context.appColors.accent,
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: colors.textSecondary,
+          ),
         ),
-        const SizedBox(width: 8),
-        _QuickInfoChip(
-          icon: Icons.ev_station_rounded,
-          label: '3/8 free',
-          color: context.appColors.primary,
+      ],
+    );
+  }
+
+  Widget _buildInfoColumnWithIcon(BuildContext context,
+      {required IconData icon, required String value}) {
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Icon(icon, size: 18, color: colors.primary),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colors.textSecondary,
+          ),
         ),
       ],
     );
   }
 }
 
-class _ConnectorGrid extends ConsumerWidget {
-  final List<Map<String, dynamic>> connectors;
-  const _ConnectorGrid({required this.connectors});
+// --- Specific Selection Widgets --- //
+
+class _DateSelectionCard extends ConsumerWidget {
+  const _DateSelectionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedConnector = ref.watch(selectedConnectorProvider);
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+    final selectedDate = ref.watch(selectedDateProvider);
+    final monthYear = DateFormat('MMMM yyyy').format(selectedDate);
+    
+    // Create a mock list of dates for the week representation
+    final dates = List.generate(7, (index) {
+       return selectedDate.add(Duration(days: index - 3));
+    });
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.8,
-      ),
-      itemCount: connectors.length,
-      itemBuilder: (context, i) {
-        final connector = connectors[i];
-        final isSelected = i == selectedConnector;
-        final isAvailable = connector['status'] == 'available';
-        return GestureDetector(
-          onTap: isAvailable
-              ? () => ref.read(selectedConnectorProvider.notifier).state = i
-              : null,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? context.appColors.primary.withValues(alpha: 0.12)
-                  : context.appColors.surfaceCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected ? context.appColors.primary : context.appColors.border,
-                width: isSelected ? 1.5 : 0.5,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      connector['type'] as String,
-                      style: TextStyle(
-                        color: isSelected
-                            ? context.appColors.primary
-                            : context.appColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color:
-                            isAvailable ? context.appColors.success : context.appColors.warning,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.bolt_rounded,
-                        size: 14,
-                        color: isSelected
-                            ? context.appColors.primary
-                            : context.appColors.textMuted),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${connector['kw']} kW',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isSelected
-                            ? context.appColors.primary
-                            : context.appColors.textMuted,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      connector['price'] as String,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.appColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _AmenitiesGrid extends StatelessWidget {
-  const _AmenitiesGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _AmenityChip(icon: Icons.wifi_rounded, label: 'Free WiFi'),
-        _AmenityChip(icon: Icons.local_parking_rounded, label: 'Parking'),
-        _AmenityChip(icon: Icons.restaurant_rounded, label: 'Café nearby'),
-        _AmenityChip(icon: Icons.accessible_rounded, label: 'Accessible'),
-        _AmenityChip(icon: Icons.security_rounded, label: 'CCTV'),
-      ],
-    );
-  }
-}
-
-class _BottomActionPanel extends StatelessWidget {
-  final Map<String, dynamic> connector;
-  const _BottomActionPanel({required this.connector});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
-        top: 16,
-      ),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.appColors.surface,
-        border: Border(top: BorderSide(color: context.appColors.border, width: 0.5)),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${connector['kw']} kW • ${connector['type']}',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  Text(
-                    connector['price'] as String,
-                    style: TextStyle(
-                        color: context.appColors.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16),
-                  ),
-                ],
-              ),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.electric_bolt_rounded, size: 18),
-                label: const Text('Start Charging'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(0, 48),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+              Text(
+                monthYear,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              Row(
+                children: [
+                  Icon(Icons.chevron_left_rounded, color: colors.textSecondary),
+                  const SizedBox(width: 16),
+                  Icon(Icons.chevron_right_rounded, color: colors.textPrimary),
+                ],
+              ),
             ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(7, (index) {
+              final date = dates[index];
+              final isSelected = date.day == selectedDate.day && date.month == selectedDate.month;
+              final dayInitial = DateFormat('E').format(date).substring(0, 1);
+              final isPast = date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+
+              return GestureDetector(
+                onTap: isPast ? null : () {
+                  ref.read(selectedDateProvider.notifier).state = date;
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      dayInitial,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected ? colors.primary : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${date.day}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isSelected 
+                              ? Colors.white 
+                              : (isPast ? colors.border : colors.textPrimary),
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -431,88 +484,170 @@ class _BottomActionPanel extends StatelessWidget {
   }
 }
 
-class _QuickInfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _QuickInfoChip(
-      {required this.icon, required this.label, required this.color});
+class _TimeSelectionField extends ConsumerWidget {
+  const _TimeSelectionField();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 5),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12, color: color, fontWeight: FontWeight.w500)),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+    final selectedTime = ref.watch(selectedTimeProvider);
+
+    return InkWell(
+      onTap: () async {
+        final TimeOfDay? time = await showTimePicker(
+          context: context,
+          initialTime: selectedTime,
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: colors.primary, 
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (time != null) {
+          ref.read(selectedTimeProvider.notifier).state = time;
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.primary, width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.schedule_rounded, color: colors.primary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedTime.format(context),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: colors.textPrimary,
+                ),
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _AmenityChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _AmenityChip({required this.icon, required this.label});
+class _DurationSelectionRow extends ConsumerWidget {
+  const _DurationSelectionRow();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIndex = ref.watch(selectedDurationIndexProvider);
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(
+          durationLabels.length,
+          (index) {
+            final isSelected = index == selectedIndex;
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () {
+                  ref.read(selectedDurationIndexProvider.notifier).state = index;
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? colors.primary : colors.surface,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isSelected ? colors.primary : colors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    durationLabels[index],
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isSelected ? Colors.white : colors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _CostEstimationPill extends ConsumerWidget {
+  const _CostEstimationPill();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final theme = Theme.of(context);
+    final index = ref.watch(selectedDurationIndexProvider);
+    
+    final cost = baseCostPerHour * durationMultipliers[index];
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: context.appColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: context.appColors.border, width: 0.5),
+        color: colors.warning.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: context.appColors.textSecondary),
+          Icon(Icons.bolt_rounded, size: 16, color: colors.warning),
           const SizedBox(width: 6),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12, color: context.appColors.textSecondary)),
+          Text(
+            'Est. cost: \$${cost.toStringAsFixed(2)}',
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: colors.warning,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _StationMapPainter extends CustomPainter {
+// --- Map Painter --- //
+
+class _LocationGridPainter extends CustomPainter {
+  final Color color;
+  const _LocationGridPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final roadPaint = Paint()
-      ..color = const Color(0xFF1A2F3A)
-      ..strokeWidth = 10;
     final gridPaint = Paint()
-      ..color = const Color(0xFF162030).withValues(alpha: 0.5)
+      ..color = color
       ..strokeWidth = 0.5;
 
-    for (double x = 0; x < size.width; x += 30) {
+    for (double x = 0; x < size.width; x += 20) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
     }
-    for (double y = 0; y < size.height; y += 30) {
+    for (double y = 0; y < size.height; y += 20) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
-    canvas.drawLine(Offset(0, size.height * 0.5),
-        Offset(size.width, size.height * 0.5), roadPaint);
-    canvas.drawLine(Offset(size.width * 0.5, 0),
-        Offset(size.width * 0.5, size.height), roadPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+

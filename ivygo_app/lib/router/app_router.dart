@@ -9,6 +9,7 @@ import 'package:ivygo_app/features/map/presentation/screens/map_home_screen.dart
 import 'package:ivygo_app/features/chargers/presentation/screens/chargers_list_screen.dart';
 import 'package:ivygo_app/features/chargers/presentation/screens/chargers_empty_screen.dart';
 import 'package:ivygo_app/features/chargers/presentation/screens/station_detail_screen.dart';
+import 'package:ivygo_app/features/booking/presentation/screens/booking_screen.dart';
 
 /// Routes that require the user to be authenticated.
 const _protectedRoutes = ['/home'];
@@ -22,17 +23,15 @@ GoRouter createAppRouter(ProviderContainer container) {
     debugLogDiagnostics: true,
     refreshListenable: authNotifier,
     redirect: (context, state) {
+      // Auth redirect is temporarily disabled.
+      // Re-enable and uncomment the block below when auth is ready:
+      //
       final authState = container.read(authProvider);
       final isAuthenticated = authState is AuthAuthenticated;
       final location = state.matchedLocation;
-
       final goingToProtected =
           _protectedRoutes.any((r) => location.startsWith(r));
-
-      // Not authenticated and trying to access a protected route → sign in.
       if (!isAuthenticated && goingToProtected) return '/';
-
-      // Authenticated and on the sign-in or register page → home.
       if (isAuthenticated && (location == '/' || location == '/register')) {
         return '/home';
       }
@@ -77,6 +76,12 @@ GoRouter createAppRouter(ProviderContainer container) {
               final stationId = state.pathParameters['id'] ?? '';
               return StationDetailScreen(stationId: stationId);
             },
+          ),
+          GoRoute(
+            path: 'booking',
+            name: 'booking',
+            builder: (BuildContext context, GoRouterState state) =>
+                const BookingScreen(),
           ),
         ],
       ),
