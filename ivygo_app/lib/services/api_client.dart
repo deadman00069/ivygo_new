@@ -53,7 +53,8 @@ Dio _buildDio() {
         } else {
           message = switch (e.type) {
             DioExceptionType.connectionTimeout => 'Connection timed out.',
-            DioExceptionType.receiveTimeout => 'Server took too long to respond.',
+            DioExceptionType.receiveTimeout =>
+              'Server took too long to respond.',
             DioExceptionType.connectionError => 'No internet connection.',
             _ => e.message ?? 'An unexpected error occurred.',
           };

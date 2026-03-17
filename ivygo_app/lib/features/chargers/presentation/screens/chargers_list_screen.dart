@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ivygo_app/theme/app_theme.dart';
 
-class ChargersListScreen extends StatefulWidget {
+final selectedFilterProvider =
+    StateProvider.autoDispose<String>((ref) => 'All');
+
+class ChargersListScreen extends ConsumerWidget {
   const ChargersListScreen({super.key});
-
-  @override
-  State<ChargersListScreen> createState() => _ChargersListScreenState();
-}
-
-class _ChargersListScreenState extends State<ChargersListScreen> {
-  String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Fast', 'Available', 'Nearby'];
 
   static const List<Map<String, dynamic>> _chargers = [
     {
@@ -77,7 +73,7 @@ class _ChargersListScreenState extends State<ChargersListScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -95,80 +91,100 @@ class _ChargersListScreenState extends State<ChargersListScreen> {
       ),
       body: Column(
         children: [
-          // Filter chips
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, i) {
-                  final isSelected = _selectedFilter == _filters[i];
-                  return GestureDetector(
-                    onTap: () =>
-                        setState(() => _selectedFilter = _filters[i]),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color:
-                              isSelected ? AppColors.primary : AppColors.border,
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Text(
-                        _filters[i],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.black : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          // Summary row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  '${_chargers.length} stations found',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(Icons.sort_rounded, size: 16, color: AppColors.textMuted),
-                const SizedBox(width: 4),
-                Text('Distance',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: AppColors.textMuted)),
-              ],
-            ),
-          ),
+          const _FilterChipsSection(),
+          _SummaryRow(theme: theme, totalFound: _chargers.length),
           const SizedBox(height: 4),
-          // Charger list
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               itemCount: _chargers.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, i) =>
-                  _ChargerCard(charger: _chargers[i]),
+              itemBuilder: (context, i) => _ChargerCard(charger: _chargers[i]),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterChipsSection extends ConsumerWidget {
+  const _FilterChipsSection();
+
+  static const List<String> _filters = ['All', 'Fast', 'Available', 'Nearby'];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedFilter = ref.watch(selectedFilterProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SizedBox(
+        height: 36,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _filters.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (context, i) {
+            final filter = _filters[i];
+            final isSelected = selectedFilter == filter;
+            return GestureDetector(
+              onTap: () =>
+                  ref.read(selectedFilterProvider.notifier).state = filter,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? context.appColors.primary
+                      : context.appColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? context.appColors.primary : context.appColors.border,
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  filter,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? Colors.black : context.appColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.theme, required this.totalFound});
+  final ThemeData theme;
+  final int totalFound;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            '$totalFound stations found',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: context.appColors.textMuted,
+            ),
+          ),
+          const Spacer(),
+          Icon(Icons.sort_rounded, size: 16, color: context.appColors.textMuted),
+          const SizedBox(width: 4),
+          Text('Distance',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: context.appColors.textMuted)),
         ],
       ),
     );
@@ -187,9 +203,9 @@ class _ChargerCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: context.appColors.surfaceCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: context.appColors.border, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,13 +217,14 @@ class _ChargerCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: isAvailable
-                        ? AppColors.primary.withValues(alpha: 0.12)
-                        : AppColors.surfaceElevated,
+                        ? context.appColors.primary.withValues(alpha: 0.12)
+                        : context.appColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.ev_station_rounded,
-                    color: isAvailable ? AppColors.primary : AppColors.textMuted,
+                    color:
+                        isAvailable ? context.appColors.primary : context.appColors.textMuted,
                     size: 22,
                   ),
                 ),
@@ -218,8 +235,8 @@ class _ChargerCard extends StatelessWidget {
                     children: [
                       Text(
                         charger['name'] as String,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.appColors.textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -227,8 +244,8 @@ class _ChargerCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         charger['address'] as String,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
+                        style: TextStyle(
+                          color: context.appColors.textMuted,
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -241,12 +258,12 @@ class _ChargerCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: isAvailable
-                            ? AppColors.success.withValues(alpha: 0.15)
-                            : AppColors.error.withValues(alpha: 0.15),
+                            ? context.appColors.success.withValues(alpha: 0.15)
+                            : context.appColors.error.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -255,7 +272,8 @@ class _ChargerCard extends StatelessWidget {
                             : 'Full',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isAvailable ? AppColors.success : AppColors.error,
+                          color:
+                              isAvailable ? context.appColors.success : context.appColors.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -263,9 +281,9 @@ class _ChargerCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       charger['distance'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: context.appColors.textMuted,
                       ),
                     ),
                   ],
@@ -273,38 +291,38 @@ class _ChargerCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            const Divider(color: AppColors.divider, height: 1),
+            Divider(color: context.appColors.divider, height: 1),
             const SizedBox(height: 12),
             Row(
               children: [
                 _InfoChip(
                   icon: Icons.bolt_rounded,
                   label: charger['kw'] as String,
-                  color: AppColors.warning,
+                  color: context.appColors.warning,
                 ),
                 const SizedBox(width: 8),
                 _InfoChip(
                   icon: Icons.electrical_services_rounded,
                   label: charger['type'] as String,
-                  color: AppColors.accent,
+                  color: context.appColors.accent,
                 ),
                 const SizedBox(width: 8),
                 _InfoChip(
                   icon: Icons.attach_money_rounded,
                   label: charger['price'] as String,
-                  color: AppColors.success,
+                  color: context.appColors.success,
                 ),
                 const Spacer(),
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded,
-                        color: AppColors.warning, size: 14),
+                    Icon(Icons.star_rounded,
+                        color: context.appColors.warning, size: 14),
                     const SizedBox(width: 3),
                     Text(
                       '${charger['rating']}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -323,7 +341,8 @@ class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _InfoChip({required this.icon, required this.label, required this.color});
+  const _InfoChip(
+      {required this.icon, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {

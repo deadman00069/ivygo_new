@@ -73,57 +73,57 @@ class AppTheme {
         onSurface: LightAppColors.textPrimary,
       ),
       textTheme:
-          GoogleFonts.interTextTheme(ThemeData.light().textTheme).copyWith(
-        displayLarge: GoogleFonts.inter(
+          GoogleFonts.robotoTextTheme(ThemeData.light().textTheme).copyWith(
+        displayLarge: GoogleFonts.roboto(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           color: LightAppColors.textPrimary,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: GoogleFonts.roboto(
           fontSize: 26,
           fontWeight: FontWeight.w600,
           color: LightAppColors.textPrimary,
           letterSpacing: -0.3,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: GoogleFonts.roboto(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: LightAppColors.textPrimary,
         ),
-        headlineMedium: GoogleFonts.inter(
-          fontSize: 18,
+        headlineMedium: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: LightAppColors.textPrimary,
         ),
-        titleLarge: GoogleFonts.inter(
-          fontSize: 16,
+        titleLarge: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: LightAppColors.textPrimary,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: LightAppColors.textPrimary,
         ),
-        bodyLarge: GoogleFonts.inter(
-          fontSize: 16,
+        bodyLarge: GoogleFonts.roboto(
+          fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: LightAppColors.textSecondary,
+          color: LightAppColors.textPrimary,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: LightAppColors.textSecondary,
         ),
-        bodySmall: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
+        bodySmall: GoogleFonts.roboto(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
           color: LightAppColors.textMuted,
         ),
-        labelLarge: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+        labelLarge: GoogleFonts.roboto(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
           color: LightAppColors.textPrimary,
         ),
       ),
@@ -149,11 +149,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: LightAppColors.error),
         ),
-        hintStyle: GoogleFonts.inter(
+        hintStyle: GoogleFonts.roboto(
           color: LightAppColors.textMuted,
           fontSize: 14,
         ),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.roboto(
           color: LightAppColors.textSecondary,
           fontSize: 14,
         ),
@@ -167,7 +167,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.roboto(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -181,7 +181,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.roboto(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -212,8 +212,8 @@ class AppTheme {
         foregroundColor: LightAppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: 18,
+        titleTextStyle: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: LightAppColors.textPrimary,
         ),
@@ -236,57 +236,57 @@ class AppTheme {
         onSurface: AppColors.textPrimary,
       ),
       textTheme:
-          GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: GoogleFonts.inter(
+          GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme).copyWith(
+        displayLarge: GoogleFonts.roboto(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: GoogleFonts.roboto(
           fontSize: 26,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           letterSpacing: -0.3,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: GoogleFonts.roboto(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineMedium: GoogleFonts.inter(
-          fontSize: 18,
+        headlineMedium: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        titleLarge: GoogleFonts.inter(
-          fontSize: 16,
+        titleLarge: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
-        bodyLarge: GoogleFonts.inter(
-          fontSize: 16,
+        bodyLarge: GoogleFonts.roboto(
+          fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: AppColors.textSecondary,
+          color: AppColors.textPrimary,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
         ),
-        bodySmall: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
+        bodySmall: GoogleFonts.roboto(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
           color: AppColors.textMuted,
         ),
-        labelLarge: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+        labelLarge: GoogleFonts.roboto(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
       ),
@@ -311,11 +311,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        hintStyle: GoogleFonts.inter(
+        hintStyle: GoogleFonts.roboto(
           color: AppColors.textMuted,
           fontSize: 14,
         ),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.roboto(
           color: AppColors.textSecondary,
           fontSize: 14,
         ),
@@ -329,7 +329,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.roboto(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -343,7 +343,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.roboto(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -374,42 +374,12 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: 18,
+        titleTextStyle: GoogleFonts.roboto(
+          fontSize: 19,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
       ),
     );
   }
-}
-
-class ThemeColors {
-  final bool isLight;
-  ThemeColors(this.isLight);
-
-  Color get primary => isLight ? LightAppColors.primary : AppColors.primary;
-  Color get primaryDark => isLight ? LightAppColors.primaryDark : AppColors.primaryDark;
-  Color get primaryDarker => isLight ? LightAppColors.primaryDarker : AppColors.primaryDarker;
-
-  Color get background => isLight ? LightAppColors.background : AppColors.background;
-  Color get surface => isLight ? LightAppColors.surface : AppColors.surface;
-  Color get surfaceElevated => isLight ? LightAppColors.surfaceElevated : AppColors.surfaceElevated;
-  Color get surfaceCard => isLight ? LightAppColors.surfaceCard : AppColors.surfaceCard;
-
-  Color get textPrimary => isLight ? LightAppColors.textPrimary : AppColors.textPrimary;
-  Color get textSecondary => isLight ? LightAppColors.textSecondary : AppColors.textSecondary;
-  Color get textMuted => isLight ? LightAppColors.textMuted : AppColors.textMuted;
-
-  Color get accent => isLight ? LightAppColors.accent : AppColors.accent;
-  Color get warning => isLight ? LightAppColors.warning : AppColors.warning;
-  Color get error => isLight ? LightAppColors.error : AppColors.error;
-  Color get success => isLight ? LightAppColors.success : AppColors.success;
-
-  Color get border => isLight ? LightAppColors.border : AppColors.border;
-  Color get divider => isLight ? LightAppColors.divider : AppColors.divider;
-}
-
-extension AppThemeContext on BuildContext {
-  ThemeColors get appColors => ThemeColors(Theme.of(this).brightness == Brightness.light);
 }

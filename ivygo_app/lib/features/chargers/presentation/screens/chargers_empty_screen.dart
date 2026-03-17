@@ -22,44 +22,7 @@ class ChargersEmptyScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Illustration
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceElevated,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border, width: 0.5),
-                ),
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      const Icon(
-                        Icons.ev_station_rounded,
-                        size: 52,
-                        color: AppColors.textMuted,
-                      ),
-                      Positioned(
-                        bottom: 26,
-                        right: 22,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceElevated,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: AppColors.error.withValues(alpha: 0.6)),
-                          ),
-                          child: const Icon(Icons.close_rounded,
-                              size: 14, color: AppColors.error),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const _EmptyIllustration(),
               const SizedBox(height: 32),
               Text(
                 'No Chargers Found',
@@ -70,7 +33,7 @@ class ChargersEmptyScreen extends StatelessWidget {
               Text(
                 'We couldn\'t find any charging stations in this area. Try expanding your search radius or exploring a different location.',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -88,6 +51,51 @@ class ChargersEmptyScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyIllustration extends StatelessWidget {
+  const _EmptyIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        color: context.appColors.surfaceElevated,
+        shape: BoxShape.circle,
+        border: Border.all(color: context.appColors.border, width: 0.5),
+      ),
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              Icons.ev_station_rounded,
+              size: 52,
+              color: context.appColors.textMuted,
+            ),
+            Positioned(
+              bottom: 26,
+              right: 22,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: context.appColors.surfaceElevated,
+                  shape: BoxShape.circle,
+                  border:
+                      Border.all(color: context.appColors.error.withValues(alpha: 0.6)),
+                ),
+                child: Icon(Icons.close_rounded,
+                    size: 14, color: context.appColors.error),
+              ),
+            ),
+          ],
         ),
       ),
     );
