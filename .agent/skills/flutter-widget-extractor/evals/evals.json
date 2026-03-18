@@ -1,0 +1,36 @@
+{
+  "skill_name": "flutter-widget-extractor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a Flutter app with a sign_in_screen.dart and create_account_screen.dart. Both screens have almost identical ElevatedButton and TextFormField styling. Can you extract the shared widgets into the widgets folder?",
+      "expected_output": "The skill should: (1) scan both screen files, (2) identify the duplicated ElevatedButton (PrimaryButton) and TextFormField (AppTextField) patterns, (3) create lib/widgets/buttons/primary_button.dart and lib/widgets/inputs/app_text_field.dart, (4) replace the inline code in both screens with the new widgets, (5) run flutter analyze, (6) provide a summary table of extracted widgets.",
+      "files": [
+        "lib/features/auth/presentation/screens/sign_in_screen.dart",
+        "lib/features/auth/presentation/screens/create_account_screen.dart"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My chargers_empty_screen.dart has a full screen empty state with a big icon, title, message and a Try Again button. I want to make that empty state reusable since map_home_screen.dart might also need it. Extract it into a shared widget.",
+      "expected_output": "The skill should: (1) read chargers_empty_screen.dart, (2) identify the empty state pattern (centered Column with Icon, Text title, Text body, and a button), (3) create lib/widgets/states/empty_state_view.dart with appropriate props (icon, title, message, action widget), (4) replace the inline code in chargers_empty_screen.dart with EmptyStateView(...), (5) run flutter analyze.",
+      "files": [
+        "lib/features/chargers/presentation/screens/chargers_empty_screen.dart"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Go through every screen in my Flutter project and extract all the reusable widgets you can find. Put them in the widgets folder with sub-folders. Also create a barrel export file.",
+      "expected_output": "The skill should: (1) scan ALL screen files across features/, (2) list all discovered candidate widgets with their source screens, (3) extract each widget to the correct sub-folder in lib/widgets/ (buttons/, cards/, inputs/, states/, sheets/, layout/), (4) update each screen to use the new widgets, (5) create lib/widgets/widgets.dart as a barrel file, (6) run flutter analyze and confirm it's clean, (7) output a summary table of all extracted widgets with file locations and which screens use them.",
+      "files": [
+        "lib/features/auth/presentation/screens/sign_in_screen.dart",
+        "lib/features/auth/presentation/screens/create_account_screen.dart",
+        "lib/features/chargers/presentation/screens/chargers_list_screen.dart",
+        "lib/features/chargers/presentation/screens/chargers_empty_screen.dart",
+        "lib/features/chargers/presentation/screens/station_detail_screen.dart",
+        "lib/features/map/presentation/screens/map_home_screen.dart",
+        "lib/features/booking/presentation/screens/booking_screen.dart"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ivygo_app/theme/app_theme.dart';
+import 'package:ivygo_app/core/theme/app_theme.dart';
+import 'package:ivygo_app/router/app_routes_name.dart';
 
 final mapNavIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 
@@ -160,7 +161,7 @@ class _MapMarkers extends StatelessWidget {
           left: pos.dx * size.width - 20,
           top: pos.dy * size.height - 20,
           child: GestureDetector(
-            onTap: () => context.go('/home/station/ev-001'),
+            onTap: () => context.go(AppRoutes.stationDetail.getFullPath('ev-001')),
             child: Container(
               width: 40,
               height: 40,
@@ -223,7 +224,7 @@ class _BottomPanel extends StatelessWidget {
                 ],
               ),
               TextButton(
-                onPressed: () => context.go('/home/chargers'),
+                onPressed: () => context.go(AppRoutes.chargersList.fullPath),
                 style: TextButton.styleFrom(foregroundColor: context.appColors.primary),
                 child: const Text('See All'),
               ),
@@ -285,7 +286,7 @@ class _NearbyStationCard extends StatelessWidget {
     final station = _stations[index % _stations.length];
     final isAvailable = (station['available'] as int) > 0;
     return GestureDetector(
-      onTap: () => context.go('/home/station/ev-00${index + 1}'),
+      onTap: () => context.go(AppRoutes.stationDetail.getFullPath('ev-00${index + 1}')),
       child: Container(
         width: 160,
         padding: const EdgeInsets.all(12),
@@ -407,7 +408,7 @@ class _BottomNav extends ConsumerWidget {
               return GestureDetector(
                 onTap: () {
                   ref.read(mapNavIndexProvider.notifier).state = i;
-                  if (i == 1) context.go('/home/chargers');
+                  if (i == 1) context.go(AppRoutes.chargersList.fullPath);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),

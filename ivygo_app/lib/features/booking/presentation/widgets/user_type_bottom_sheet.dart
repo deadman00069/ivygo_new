@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ivygo_app/theme/app_theme.dart';
+import 'package:ivygo_app/core/theme/app_theme.dart';
 
 // 0 = Guest, 1 = Registered User
 final selectedUserTypeProvider = StateProvider.autoDispose<int>((ref) => 0);

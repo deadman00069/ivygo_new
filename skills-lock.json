@@ -10,6 +10,11 @@
       "source": "jeffallan/claude-skills",
       "sourceType": "github",
       "computedHash": "273a5eeae0e1e61e47039ca3abc4884e8479dec8d28c6d851c79c77ad039e63f"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "b122f4d1e91aa1d83027e050b5b37c3156203ee85458d7b1360bc48167c9e02a"
     }
   }
 }

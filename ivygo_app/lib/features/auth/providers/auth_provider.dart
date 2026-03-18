@@ -23,6 +23,11 @@ class AuthAuthenticated extends AuthState {
   final String token;
 }
 
+/// Reset link was successfully sent.
+class AuthForgotPasswordSuccess extends AuthState {
+  const AuthForgotPasswordSuccess();
+}
+
 /// An authentication error occurred.
 class AuthError extends AuthState {
   const AuthError({required this.message});
@@ -47,6 +52,19 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final response = await _service.login(email, password);
       state = AuthAuthenticated(token: response.token);
+    } on ApiException catch (e) {
+      state = AuthError(message: e.message);
+    } catch (_) {
+      state = const AuthError(message: 'An unexpected error occurred.');
+    }
+  }
+
+  /// Request a password reset link.
+  Future<void> resetPassword(String email) async {
+    state = const AuthLoading();
+    try {
+      await _service.resetPassword(email);
+      state = const AuthForgotPasswordSuccess();
     } on ApiException catch (e) {
       state = AuthError(message: e.message);
     } catch (_) {

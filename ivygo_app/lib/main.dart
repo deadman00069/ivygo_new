@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ivygo_app/features/auth/providers/auth_provider.dart';
 import 'package:ivygo_app/router/app_router.dart';
-import 'package:ivygo_app/theme/app_theme.dart';
+import 'package:ivygo_app/core/theme/app_theme.dart';
 
 void main() {
   runApp(
@@ -46,7 +46,7 @@ class _IvygoAppState extends ConsumerState<IvygoApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       routerConfig: router,
     );
   }

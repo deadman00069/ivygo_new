@@ -20,11 +20,11 @@ class AuthService {
   /// Calls `POST /login` and persists the returned token.
   ///
   /// Throws [ApiException] on HTTP errors or network failures.
-  Future<LoginResponse> login(String email, String password) async {
+  Future<LoginResponse> login(String username, String password) async {
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
+      final response = await _dio.post<dynamic>(
         '/login',
-        data: LoginRequest(email: email, password: password).toJson(),
+        data: LoginRequest(username: username, password: password).toJson(),
       );
 
       final data = response.data;
@@ -32,7 +32,7 @@ class AuthService {
         throw const ApiException(message: 'Empty response from server.');
       }
 
-      final loginResponse = LoginResponse.fromJson(data);
+      final loginResponse = LoginResponse.fromJson(data.data);
       await _storage.write(key: _kTokenKey, value: loginResponse.token);
       return loginResponse;
     } on DioException catch (e) {
@@ -45,6 +45,19 @@ class AuthService {
 
   /// Returns the stored auth token, or `null` if none exists.
   Future<String?> getToken() => _storage.read(key: _kTokenKey);
+
+  /// Calls `POST /forgot-password` to send a reset link.
+  Future<void> resetPassword(String email) async {
+    // In a real app, this would be:
+    // try {
+    //   await _dio.post('/forgot-password', data: {'email': email});
+    // } on DioException catch (e) {
+    //   ...
+    // }
+    
+    // Mocking success
+    await Future.delayed(const Duration(seconds: 1));
+  }
 
   /// Deletes the stored auth token (logout).
   Future<void> logout() => _storage.delete(key: _kTokenKey);

@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 
+import '../core/config/env/env.dart';
+
 /// Application-level constant for the API base URL.
-const String kBaseUrl = 'https://api.ivygo.com';
+const String kBaseUrl = Env.appBaseUrl;
 
 /// A typed exception thrown when an API call fails.
 class ApiException implements Exception {
