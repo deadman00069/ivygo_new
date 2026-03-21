@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ivygo_app/core/theme/app_theme.dart';
 import 'package:ivygo_app/router/app_routes_name.dart';
 
-final mapNavIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
-
-class MapHomeScreen extends ConsumerWidget {
+/// The map screen shown on the Map tab. The [Scaffold] and bottom navigation
+/// bar are provided by [MainShellScreen]; this widget only renders map content.
+class MapHomeScreen extends StatelessWidget {
   const MapHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Keep build minimal - essentially just the scaffold and positioning
-    return const Scaffold(
-      body: Stack(
-        children: [
-          _MapBackground(),
-          _TopSearchBar(),
-          _MapMarkers(),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: _BottomPanel(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _BottomNav(),
+  Widget build(BuildContext context) {
+    return const Stack(
+      children: [
+        _MapBackground(),
+        _TopSearchBar(),
+        _MapMarkers(),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: _BottomPanel(),
+        ),
+      ],
     );
   }
 }
@@ -103,7 +98,8 @@ class _TopSearchBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: context.appColors.surface.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.appColors.border, width: 0.5),
+                    border: Border.all(
+                        color: context.appColors.border, width: 0.5),
                   ),
                   child: Row(
                     children: [
@@ -127,7 +123,8 @@ class _TopSearchBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.appColors.surface.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.appColors.border, width: 0.5),
+                border: Border.all(
+                    color: context.appColors.border, width: 0.5),
               ),
               child: IconButton(
                 onPressed: () {},
@@ -161,7 +158,8 @@ class _MapMarkers extends StatelessWidget {
           left: pos.dx * size.width - 20,
           top: pos.dy * size.height - 20,
           child: GestureDetector(
-            onTap: () => context.go(AppRoutes.stationDetail.getFullPath('ev-001')),
+            onTap: () =>
+                context.go(AppRoutes.stationDetail.getFullPath('ev-001')),
             child: Container(
               width: 40,
               height: 40,
@@ -193,7 +191,7 @@ class _BottomPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 96),
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.appColors.surface.withValues(alpha: 0.97),
@@ -225,7 +223,8 @@ class _BottomPanel extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => context.go(AppRoutes.chargersList.fullPath),
-                style: TextButton.styleFrom(foregroundColor: context.appColors.primary),
+                style: TextButton.styleFrom(
+                    foregroundColor: context.appColors.primary),
                 child: const Text('See All'),
               ),
             ],
@@ -286,7 +285,8 @@ class _NearbyStationCard extends StatelessWidget {
     final station = _stations[index % _stations.length];
     final isAvailable = (station['available'] as int) > 0;
     return GestureDetector(
-      onTap: () => context.go(AppRoutes.stationDetail.getFullPath('ev-00${index + 1}')),
+      onTap: () => context
+          .go(AppRoutes.stationDetail.getFullPath('ev-00${index + 1}')),
       child: Container(
         width: 160,
         padding: const EdgeInsets.all(12),
@@ -302,10 +302,13 @@ class _NearbyStationCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.ev_station_rounded,
-                    color:
-                        isAvailable ? context.appColors.primary : context.appColors.textMuted,
-                    size: 18),
+                Icon(
+                  Icons.ev_station_rounded,
+                  color: isAvailable
+                      ? context.appColors.primary
+                      : context.appColors.textMuted,
+                  size: 18,
+                ),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -319,7 +322,9 @@ class _NearbyStationCard extends StatelessWidget {
                     isAvailable ? 'Available' : 'Full',
                     style: TextStyle(
                       fontSize: 10,
-                      color: isAvailable ? context.appColors.success : context.appColors.error,
+                      color: isAvailable
+                          ? context.appColors.success
+                          : context.appColors.error,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -350,103 +355,6 @@ class _NearbyStationCard extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
-}
-
-class _BottomNav extends ConsumerWidget {
-  const _BottomNav();
-
-  static const List<_NavItem> _navItems = [
-    _NavItem(
-        icon: Icons.map_outlined, activeIcon: Icons.map_rounded, label: 'Map'),
-    _NavItem(
-        icon: Icons.ev_station_outlined,
-        activeIcon: Icons.ev_station_rounded,
-        label: 'Chargers'),
-    _NavItem(
-        icon: Icons.bookmark_outline_rounded,
-        activeIcon: Icons.bookmark_rounded,
-        label: 'My Bookings'),
-    _NavItem(
-        icon: Icons.settings_outlined,
-        activeIcon: Icons.settings_rounded,
-        label: 'Settings'),
-  ];
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentIndex = ref.watch(mapNavIndexProvider);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: context.appColors.surface,
-        border: Border(top: BorderSide(color: context.appColors.border, width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_navItems.length, (i) {
-              final item = _navItems[i];
-              final isActive = i == currentIndex;
-              return GestureDetector(
-                onTap: () {
-                  ref.read(mapNavIndexProvider.notifier).state = i;
-                  if (i == 1) context.go(AppRoutes.chargersList.fullPath);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? context.appColors.primary.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isActive ? item.activeIcon : item.icon,
-                        color:
-                            isActive ? context.appColors.primary : context.appColors.textMuted,
-                        size: 22,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight:
-                              isActive ? FontWeight.w600 : FontWeight.w400,
-                          color: isActive
-                              ? context.appColors.primary
-                              : context.appColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
         ),
       ),
     );

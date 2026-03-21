@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Ivygo App</string>
+	<string>IVYGO</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>ivygo_app</string>
+	<string>IVYGO</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -66,5 +66,21 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to the camera to take pictures of your charger.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location allows us to show you available chargers nearby.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location allows us to show you available chargers nearby.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location allows us to show you available chargers nearby.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to the photo library to upload pictures of your charger.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Access calendar to add your EV charging appointments to help you remember your booking times.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Access contacts for event location autocomplete when adding charging appointments to your calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Access calendar to add your EV charging appointments to help you remember your booking times.</string>
 </dict>
 </plist>

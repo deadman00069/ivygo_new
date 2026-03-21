@@ -11,8 +11,15 @@ import 'package:ivygo_app/features/chargers/presentation/screens/chargers_list_s
 import 'package:ivygo_app/features/chargers/presentation/screens/chargers_empty_screen.dart';
 import 'package:ivygo_app/features/chargers/presentation/screens/station_detail_screen.dart';
 import 'package:ivygo_app/features/booking/presentation/screens/booking_screen.dart';
+import 'package:ivygo_app/features/settings/presentation/screens/settings_screen.dart';
+import 'package:ivygo_app/features/navigation/presentation/screens/main_shell_screen.dart';
 import 'package:ivygo_app/features/splash/presentation/screens/splash_screen.dart';
 import 'package:ivygo_app/router/app_routes_name.dart';
+
+/// Global key for the root navigator (outside the shell).
+/// Required to hide the bottom navigation bar for specific routes.
+final GlobalKey<NavigatorState> _rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// Routes that require the user to be authenticated.
 final _protectedRoutes = [
@@ -24,11 +31,11 @@ GoRouter createAppRouter(ProviderContainer container) {
   final authNotifier = _AuthChangeNotifier(container);
 
   return GoRouter(
-    initialLocation: AppRoutes.splash.path,
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: AppRoutes.mapHome.path,
     debugLogDiagnostics: true,
     refreshListenable: authNotifier,
     redirect: (context, state) {
-      // Auth redirect logic
       final authState = container.read(authProvider);
       final isAuthenticated = authState is AuthAuthenticated;
       final location = state.matchedLocation;
@@ -44,64 +51,106 @@ GoRouter createAppRouter(ProviderContainer container) {
         return AppRoutes.mapHome.path;
       }
 
-      return null; // no redirect
+      return null;
     },
     routes: [
       GoRoute(
         path: AppRoutes.splash.path,
         name: AppRoutes.splash.name,
-        builder: (BuildContext context, GoRouterState state) =>
-            const SplashScreen(),
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: AppRoutes.signIn.path,
         name: AppRoutes.signIn.name,
-        builder: (BuildContext context, GoRouterState state) =>
-            const SignInScreen(),
+        builder: (context, state) => const SignInScreen(),
       ),
       GoRoute(
         path: AppRoutes.createAccount.path,
         name: AppRoutes.createAccount.name,
-        builder: (BuildContext context, GoRouterState state) =>
-            const CreateAccountScreen(),
+        builder: (context, state) => const CreateAccountScreen(),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword.path,
         name: AppRoutes.forgotPassword.name,
-        builder: (BuildContext context, GoRouterState state) =>
-            const ForgotPasswordScreen(),
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.mapHome.path,
-        name: AppRoutes.mapHome.name,
-        builder: (BuildContext context, GoRouterState state) =>
-            const MapHomeScreen(),
-        routes: [
-          GoRoute(
-            path: AppRoutes.chargersList.path,
-            name: AppRoutes.chargersList.name,
-            builder: (BuildContext context, GoRouterState state) =>
-                const ChargersListScreen(),
+
+      /// The main shell route with persistent bottom navigation.
+      /// All main-app tabs live inside this [StatefulShellRoute].
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShellScreen(navigationShell: navigationShell),
+        branches: [
+          // ── Branch 0: Map ────────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.mapHome.path,
+                name: AppRoutes.mapHome.name,
+                builder: (context, state) => const MapHomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.stationDetail.path,
+                    name: AppRoutes.stationDetail.name,
+                    parentNavigatorKey: _rootNavigatorKey, // Hide bottom nav
+                    builder: (context, state) {
+                      final stationId = state.pathParameters['id'] ?? '';
+                      return StationDetailScreen(stationId: stationId);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: AppRoutes.booking.path,
+                        name: AppRoutes.booking.name,
+                        parentNavigatorKey:
+                            _rootNavigatorKey, // Hide bottom nav
+                        builder: (context, state) => const BookingScreen(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-          GoRoute(
-            path: AppRoutes.chargersEmpty.path,
-            name: AppRoutes.chargersEmpty.name,
-            builder: (BuildContext context, GoRouterState state) =>
-                const ChargersEmptyScreen(),
+
+          // ── Branch 1: Chargers ────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.chargersList.path,
+                name: AppRoutes.chargersList.name,
+                builder: (context, state) => const ChargersListScreen(),
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.chargersEmpty.path,
+                    name: AppRoutes.chargersEmpty.name,
+                    parentNavigatorKey: _rootNavigatorKey, // Hide bottom nav
+                    builder: (context, state) => const ChargersEmptyScreen(),
+                  ),
+                ],
+              ),
+            ],
           ),
-          GoRoute(
-            path: AppRoutes.stationDetail.path,
-            name: AppRoutes.stationDetail.name,
-            builder: (BuildContext context, GoRouterState state) {
-              final stationId = state.pathParameters['id'] ?? '';
-              return StationDetailScreen(stationId: stationId);
-            },
+
+          // ── Branch 2: My Bookings ─────────────────────────────────────────
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.myBookings.path,
+                name: AppRoutes.myBookings.name,
+                builder: (context, state) => const BookingScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: AppRoutes.booking.path,
-            name: AppRoutes.booking.name,
-            builder: (BuildContext context, GoRouterState state) =>
-                const BookingScreen(),
+
+          // ── Branch 3: Settings ────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.settings.path,
+                name: AppRoutes.settings.name,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
           ),
         ],
       ),

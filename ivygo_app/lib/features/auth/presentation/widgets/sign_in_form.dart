@@ -30,13 +30,11 @@ class _SignInFormState extends ConsumerState<SignInForm> {
   }
 
   Future<void> _signIn() async {
-    context.go(AppRoutes.mapHome.path);
-
-    // if (!(_formKey.currentState?.validate() ?? false)) return;
-    // await ref.read(authProvider.notifier).login(
-    //       _emailController.text.trim(),
-    //       _passwordController.text,
-    //     );
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    await ref.read(authProvider.notifier).login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
   }
 
   @override
